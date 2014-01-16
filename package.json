@@ -1,0 +1,26 @@
+{
+  "name": "statix",
+  "version": "0.0.0",
+  "description": "Collect static assets from modular components.",
+  "main": "index.js",
+  "bin": "./bin/statix",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/nick-thompson/statix.git"
+  },
+  "author": "Nick Thompson",
+  "license": "Apache 2.0",
+  "bugs": {
+    "url": "https://github.com/nick-thompson/statix/issues"
+  },
+  "dependencies": {
+    "glob": "~3.2.8",
+    "optimist": "~0.6.0",
+    "async": "~0.2.9",
+    "hat": "0.0.3",
+    "mkdirp": "~0.3.5"
+  }
+}

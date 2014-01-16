@@ -1,0 +1,51 @@
+#!/usr/bin/env node
+
+var path = require('path');
+var glob = require('glob');
+var async = require('async');
+var util = require('util');
+var mkdirp = require('mkdirp');
+var hat = require('hat');
+var fs = require('fs');
+var rack = hat.rack();
+var assetMap = {};
+
+// This config object will be defined with the following defaults (maybe) but
+// will be overwriteable by command line options.
+var config = {
+  cwd: process.cwd(),
+  assetsDir: path.join(process.cwd(), 'assets'),
+  output: path.join(process.cwd(), 'assetMap.json')
+};
+
+glob('node_modules/**/package.json', { cwd: config.cwd }, function(err, paths) {
+  async.map(paths, fs.readFile, function(err, results) {
+    mkdirp(config.assetsDir, function(err) {
+      if (err) return console.error(err);
+      // Assemble the asset map and copy the files
+      paths.forEach(function(fp, i) {
+        var pkg = JSON.parse(results[i]);
+        var dir = path.dirname(fp);
+        var statics = pkg.statix;
+        if (statics) {
+          for (var name in statics) {
+            var id = util.format('%s/%s', pkg.name, name);
+            var staticPath = path.join(dir, statics[name]);
+            var ext = path.extname(staticPath);
+            var newPath = path.join(config.assetsDir, rack() + ext);
+            // This step will eventually become pluggable. I think if the user
+            // does not specify a plugin, we continue to use streams like this
+            // for efficiency. If the user does specify a plugin, we read each
+            // static file as binary and pass into the plugin a mapping of
+            // assetID -> binaryData. Or we just pipe the stream into their
+            // plugin? But that could impose unnecessary restrictions on
+            // the users of this module.
+            fs.createReadStream(staticPath).pipe(fs.createWriteStream(newPath));
+            assetMap[id] = newPath;
+          }
+        }
+      });
+      console.log(assetMap);
+    });
+  });
+});
